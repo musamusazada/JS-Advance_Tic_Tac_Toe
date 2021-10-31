@@ -1,0 +1,77 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+.game {
+    min-height: 100vh;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    background: black;
+}
+
+.menuButton,
+.diffSelect,
+.gridSelect,
+.styleSelectUser,
+.styleSelectBot {
+    width: 140px;
+    padding: 10px 15px;
+    font-size: 1.3rem;
+    background-color: transparent;
+    color: white;
+    box-shadow: 0 0 4px 1px pink, 0 0 20px 1px rgb(240, 202, 208);
+    border: none;
+    border-radius: 10px;
+    transition: 0.4s;
+    cursor: pointer;
+    position: relative;
+}
+
+.menuButton:hover,
+.diffSelect:hover,
+.gridSelect:hover,
+.styleSelectUser:hover,
+.styleSelectBot:hover {
+    background: pink;
+    box-shadow: 0 0 18px 1px pink, 0 0 30px 1px rgb(240, 202, 208);
+    color: black;
+}
+
+.styleSelectUser::before {
+    content: 'User: ';
+    display: inline-block;
+    position: absolute;
+    color: white;
+}
+
+select {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    text-indent: 1px;
+    text-overflow: '';
+}
+
+button {
+    background-color: rgba(0, 0, 0, 0.3);
+    outline: none;
+    cursor: pointer;
+    transition: 0.2s;
+    border: 1px solid #fff;
+    font-size: 2rem;
+}
+
+button:hover {
+    background-color: rgb(240, 202, 208);
+}
+
+.on {
+    background-color: rgb(240, 202, 208);
+}
+
+.off {
+    background-color: rgba(0, 0, 0, 0.3);
+}
