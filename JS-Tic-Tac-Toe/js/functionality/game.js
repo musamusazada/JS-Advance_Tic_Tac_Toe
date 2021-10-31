@@ -242,16 +242,34 @@ function easyMode() {
 }
 
 function mediumMode() {
-    let moveArr = arrayChecker(winPro_3x3);
+    let moveArr = [];
+    let winPro = [];
+    switch (gameGrid) {
+        case '3':
+            moveArr = arrayChecker(winPro_3x3);
+            winPro = winPro_3x3;
+            break;
+        case '4':
+            moveArr = arrayChecker(winPro_4x4);
+            winPro = winPro_4x4;
+            break;
+        case '5':
+            moveArr = arrayChecker(winPro_5x5);
+            winPro = winPro_5x5;
+            break;
+
+    }
+
+
 
     // console.log(moveArr)
     if (moveArr.length > 0) {
         moveArr = arrayFilter(moveArr);
         // console.log(moveArr)
-        if (decideMove(winPro_3x3) === undefined) {
+        if (decideMove(winPro) === undefined) {
             botMoveMethod(moveArr[Math.floor(Math.random() * moveArr.length)]);
         } else {
-            botMoveMethod(decideMove(winPro_3x3));
+            botMoveMethod(decideMove(winPro));
         }
     } else {
         easyMode();
@@ -295,7 +313,7 @@ function decideMove(GameWinProArr) {
         for (let j = 0; j < userMoves.length; j++) {
             if (GameWinProArr[i].includes(userMoves[j]) && !botMoves.includes(userMoves[j])) {
                 counter++;
-                if (counter >= 2) {
+                if (counter >= gameGrid - 1) {
                     stopRow.push(GameWinProArr[i]);
                 }
             }
@@ -370,5 +388,20 @@ function optionCreator(el, txtContent, val) {
 function style(el, obj) {
     for (const key in obj) {
         el.style[key] = obj[key];
+    }
+}
+
+
+
+function handler(el, text, increment = true) {
+    el.nextElementSibling.textContent = text;
+    increment ? errors++ : errors--
+}
+
+function checkFruit(elm) {
+    if (elm.value !== "" && fruits.includes(Number(elm.value))) {
+        handler(elm, "Bu meyve bazada yoxdur !");
+    } else {
+        handler(elm, "", false);
     }
 }
