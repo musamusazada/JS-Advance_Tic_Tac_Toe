@@ -1,7 +1,7 @@
 const game = document.querySelector(".game");
 const styleIcons = ['⚒️', '⚔️', '☠️', '🎃', '💣', '🔮', '🧲', '🧽', '⚰️', '🚬']
-const userMoves = [];
-const botMoves = [];
+let userMoves = [];
+let botMoves = [];
 let winRow = [];
 //3x3 Win Probability
 const winPro_3x3 = [
@@ -44,6 +44,7 @@ let userTurn = true;
 let isMenu = true;
 let lastCell = false;
 let endGame = false;
+let isDraw = false;
 let gameDiff;
 let gameGrid;
 let userStyle;
@@ -59,14 +60,36 @@ window.onload = function() {
     }
     //Render Method
 function render(diff, grid, styleU, styleB) {
-    game.innerHTML = "" //Draw
     draw(diff, grid, styleU, styleB);
 }
 
-
+//Replay 
+function rePlay() {
+    isMenu = false;
+    game.innerHTML = "";
+    userMoves = [];
+    botMoves = [];
+    lastCell = false;
+    userTurn = true;
+    isDraw = false;
+    window.onload();
+}
+//Return to Menu
+function returnMenu() {
+    isMenu = true;
+    game.innerHTML = "";
+    userMoves = [];
+    botMoves = [];
+    lastCell = false;
+    userTurn = true;
+    isDraw = false;
+    window.onload();
+}
 //Menu Creator
 function runMenu() {
+
     const menu = document.createElement("div");
+
     menu.classList.add("menu");
     style(menu, {
         minHeight: '100vh',
@@ -137,7 +160,7 @@ function runMenu() {
     menu.appendChild(gridSelect);
     menu.appendChild(styleSelectUser);
     menu.appendChild(styleSelectBot);
-    game.appendChild(menu);
+    game.replaceChildren(menu);
 
 
 }
@@ -145,12 +168,15 @@ function runMenu() {
 
 //Starting game on Play
 function play() {
+
     gameDiff = document.querySelector(".diffSelect").options[document.querySelector(".diffSelect").selectedIndex].value;
     gameGrid = document.querySelector(".gridSelect").options[document.querySelector(".gridSelect").selectedIndex].value;
     userStyle = document.querySelector(".styleSelectUser").options[document.querySelector(".styleSelectUser").selectedIndex].value;
     botStyle = document.querySelector(".styleSelectBot").options[document.querySelector(".styleSelectBot").selectedIndex].value;
     console.log(`Diff: ${gameDiff} Grid: ${gameGrid} userStyle: ${userStyle} botStyle: ${botStyle}`)
-    render(gameDiff, gameGrid, userStyle, botStyle);
+    draw(gameDiff, gameGrid, userStyle, botStyle);
+
+
 }
 
 //Drawing the game
@@ -196,15 +222,46 @@ function draw(diff, grid, styleU, styleB) {
     game.replaceChildren(screen);
 
     if (endGame) {
-        console.log('game end');
-    }
-    if ([...userMoves, ...botMoves].length === gameGrid ** 2 && !endGame) {
-        console.log('draw')
-        endGame = true;
+        endGameChoice();
+    } else if (([...userMoves, ...botMoves].length === gameGrid ** 2 && !endGame)) {
+        endGameChoice();
+    } else if (isDraw) {
+        endGameChoice();
     }
 
 }
 
+//End Game choices
+function endGameChoice() {
+    //Replay Button
+    const buttonBox = document.createElement("div");
+    buttonBox.classList.add("button-box");
+    const replayButton = document.createElement("button");
+    style(replayButton, {
+        color: '#fff',
+        padding: '10px 15px'
+    })
+    replayButton.textContent = "Play Again!";
+
+    replayButton.addEventListener('click', function() {
+            rePlay();
+        })
+        //Return Menu Button
+    const returnMenuButton = document.createElement("button");
+    style(returnMenuButton, {
+        color: '#fff',
+        padding: '10px 15px'
+    })
+    returnMenuButton.textContent = "Return Menu";
+    returnMenuButton.addEventListener('click', function() {
+        returnMenu();
+    })
+    buttonBox.appendChild(replayButton);
+    buttonBox.appendChild(returnMenuButton);
+    game.appendChild(buttonBox);
+}
+
+//User Plays a Move!
 function userMove(i) {
     if (userTurn && ![...userMoves, ...botMoves].includes(i) && !endGame) {
         PlaySound();
@@ -214,6 +271,7 @@ function userMove(i) {
     }
 }
 
+//Bot Move by Diff level
 function botMove() {
     if (!userTurn) {
         switch (gameDiff) {
@@ -221,13 +279,14 @@ function botMove() {
                 easyMode();
                 break;
             case '2':
+
                 mediumMode()
                 break;
         }
     }
 
 }
-
+//Easy Mode Bot Logic
 function easyMode() {
     if (!lastCell && !endGame) {
         num = randomGenerator(gameGrid);
@@ -240,24 +299,26 @@ function easyMode() {
         lastCell = true;
     }
 }
-
+//Medium Mode Bot Logic
 function mediumMode() {
     let moveArr = [];
     let winPro = [];
     switch (gameGrid) {
         case '3':
-            moveArr = arrayChecker(winPro_3x3);
             winPro = winPro_3x3;
+            moveArr = arrayChecker(winPro);
             break;
         case '4':
-            moveArr = arrayChecker(winPro_4x4);
             winPro = winPro_4x4;
+            moveArr = arrayChecker(winPro);
             break;
         case '5':
-            moveArr = arrayChecker(winPro_5x5);
             winPro = winPro_5x5;
+            moveArr = arrayChecker(winPro);
             break;
-
+        default:
+            console.log('you suck')
+            break;
     }
 
 
@@ -276,7 +337,7 @@ function mediumMode() {
     }
 
 }
-
+//Find Rows
 function arrayChecker(arrPro) {
     const newArr = [];
     for (let i = 0; i < arrPro.length; i++) {
@@ -288,7 +349,7 @@ function arrayChecker(arrPro) {
     }
     return [...new Set([...newArr])];
 }
-
+//Filter them for available plays
 function arrayFilter(arr) {
     const newArr = [];
     for (let i = 0; i < arr.length; i++) {
@@ -302,7 +363,7 @@ function arrayFilter(arr) {
     return [...new Set([...newArr])];
 }
 
-//Game Win probability Array.
+//Decide to prevent possible loss.
 function decideMove(GameWinProArr) {
     let stopRow = [];
 
@@ -325,22 +386,21 @@ function decideMove(GameWinProArr) {
         for (let j = 0; j < stopRow[i].length; j++) {
             if (![...new Set([...userMoves, ...botMoves])].includes(stopRow[i][j])) {
                 decidedMove = stopRow[i][j];
-                console.log(`${stopRow[i]} STOP THIS ROW`)
-                console.log(`${decidedMove} STOPPINGG`);
             }
         }
 
     }
+    // console.log(`${decidedMove} STOPPINGG`);
 
     return decidedMove;
 }
-
+//Bot Plays a move
 function botMoveMethod(num) {
     botMoves.push(num);
     userTurn = true;
     window.onload();
 }
-
+//Check if bot or user has won
 function checkWin() {
 
     switch (gameGrid) {
@@ -353,19 +413,38 @@ function checkWin() {
     }
 }
 
-
+//Find win row and style it!
 function winRowCreator(proArr) {
     winRow = (proArr.filter(elArr => elArr.every(item => userMoves.includes(item)))).flat();
     if (winRow.length >= gameGrid) {
+        message('User Won!');
         return true;
     } else {
         winRow = proArr.filter(elArr => elArr.every(item => botMoves.includes(item))).flat();
         if (winRow.length >= gameGrid) {
+            message('Bot Won!');
             return true;
+        } else if ([...userMoves, ...botMoves].length === gameGrid ** 2) {
+            isDraw = true;
+            message('It\'s a Tie');
+
         }
     }
 }
 
+function message(text) {
+    const modal = document.createElement("div");
+    modal.classList.add('modal');
+    const message = document.createElement("p");
+    message.classList.add('modal--text');
+    message.textContent = text;
+    modal.appendChild(message);
+    modal.addEventListener('click', function() {
+        document.body.removeChild(modal);
+    })
+    document.body.appendChild(modal);
+}
+//Random Number Generator
 function randomGenerator(grid) {
     const num = Math.floor(Math.random() * (grid ** 2) + 1);
     if ([...userMoves, ...botMoves].includes(num)) {
@@ -388,20 +467,5 @@ function optionCreator(el, txtContent, val) {
 function style(el, obj) {
     for (const key in obj) {
         el.style[key] = obj[key];
-    }
-}
-
-
-
-function handler(el, text, increment = true) {
-    el.nextElementSibling.textContent = text;
-    increment ? errors++ : errors--
-}
-
-function checkFruit(elm) {
-    if (elm.value !== "" && fruits.includes(Number(elm.value))) {
-        handler(elm, "Bu meyve bazada yoxdur !");
-    } else {
-        handler(elm, "", false);
     }
 }
